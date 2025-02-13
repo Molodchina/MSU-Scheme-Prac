@@ -1,0 +1,19 @@
+1) Реализация функции left-rot! невозможна, так как функции в Racket не могут изменять значения переменных, переданных им в качестве аргументов.
+
+2)
+
+#lang racket
+
+(define-syntax left-rot!
+  (syntax-rules ()
+    [(left-rot! a b ...)
+     (shift-to (b ... a) (a b ...))]))
+
+(define-syntax shift-to
+  (syntax-rules ()
+    [(shift-to (from0 from ...) (to0 to ...))
+     (let ([tmp from0])
+       (set! to from) ...
+       (set! to0 tmp))]))
+
+

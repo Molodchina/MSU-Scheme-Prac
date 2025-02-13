@@ -1,0 +1,65 @@
+; Т.К. Все собственные делители неполных чисел являются неполными.
+; Воспользуемся этим и по мере подсчёта суммы делителей, будем проверять что очередной делитель является неполным(очевидно, нечётным он тоже будет).
+
+
+#lang scheme/base
+(require scheme/list)
+
+; Вычисляет сумму делителей числа x
+(define (sum-of-divisors x)
+  (foldl 
+    (lambda (d acc) 
+      (if (= (remainder x d) 0)
+          (+ acc d) 
+          acc))
+    0
+    (range 1 (+ x 1))  ; Включаем x в диапазон
+  )
+)
+
+; Находит n-е нечётное недостаточное число без мемоизации
+(define (odd-deficient n)
+  (let loop ([count 0] [current 1])
+    (if (= count n)
+        (- current 2)  ; Возвращаем найденное число
+        (if (< (sum-of-divisors current) (* 2 current))
+            (loop (+ count 1) (+ current 2))  ; Увеличиваем счётчик, если число недостаточное
+            (loop count (+ current 2))  ; Переходим к следующему нечётному числу
+        )
+    )
+  )
+)
+
+; Проверяет, является ли n нечётным недостаточным числом
+(define (is-odd-deficient n odd-def-hash)
+  (let sum-divisors ([acc 0] [i 1])
+    (cond
+      ((>= i n) acc)  ; Если i больше или равно n, возвращаем накопленную сумму
+      ((hash-ref odd-def-hash i #f) -1)  ; Если число уже в хеш-таблице, возвращаем -1
+      (else
+       (sum-divisors (+ acc i) (+ i 2)))))  ; Рекурсия с следующим нечётным числом
+  )
+  (let ([result (sum-divisors 0 1)])
+    (if (= result -1)
+        #f  ; Если результат был -1, значит, число уже просчитано
+        (< result n))  ; Проверка на недостаточность
+  )
+)
+
+; Находит n-е нечётное недостаточное число с мемоизацией
+(define (memo-odd-deficient n)
+  (let ([odd-def-hash (make-hash)])
+    (let loop ([count 0] [current 3])  ; Начинаем с 3, так как 1 и 2 уже не являются нечётными
+      (if (= count n) 
+          (- current 2)  ; Возвращаем найденное число
+          (begin
+            (hash-set! odd-def-hash current (is-odd-deficient current odd-def-hash))
+            (if (hash-ref odd-def-hash current #f)
+                (loop (+ count 1) (+ current 2))  ; Найдено нечётное недостаточное число
+                (loop count (+ current 2)))  ; Переходим к следующему нечётному числу
+          )
+      )
+    )
+  )
+)
+

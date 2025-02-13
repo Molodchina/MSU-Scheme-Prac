@@ -1,0 +1,117 @@
+#lang racket
+
+
+-- task 2.1
+(define (fun2-i tree)
+  (define (find-max node)
+    (let (
+          (value (vector-ref node 0))
+          (left (vector-ref node 1))
+          (right (vector-ref node 2))
+          )
+      (max
+       value
+       (if (equal? left '#()) value (find-max left))
+       (if (equal? right '#()) value (find-max right))
+       )
+    )
+  )
+  
+  (define (find-min node)
+    (let (
+          (value (vector-ref node 0))
+          (left (vector-ref node 1))
+          (right (vector-ref node 2))
+          )
+      (min
+       value
+       (if (equal? left '#()) value (find-min left))
+       (if (equal? right '#()) value (find-min right))
+       )
+      )
+    )
+  
+  (define max-val (find-max tree))
+  (define min-val (find-min tree))
+  (abs (- max-val min-val)))
+
+
+-- task 2.2
+(define (fun2-ii lst)
+  (define (add-unique x seen)
+    (if (member x seen)
+        seen
+        (cons x seen)))
+  (length (foldl add-unique '() lst)))
+
+
+-- task 2.3
+(define (stream2-3)
+  (define pentanacci '(0 0 0 0 1))
+  (define (pentanacci? n)
+    (define (gen-pentanacci seq)
+      (define (next-val seq)
+        (+ (list-ref seq 0) (list-ref seq 1) (list-ref seq 2) (list-ref seq 3) (list-ref seq 4)))
+      (if (> n (car seq))
+          (gen-pentanacci (cons (next-val seq) (take seq 4)))
+          (car seq)))
+    (pentanacci? pentanacci))
+  (define (stream-gen start)
+    (if (not (pentanacci? start))
+        (stream-gen (+ start 1))
+        (stream-gen (+ start 1))))
+  (stream-gen 1))
+
+
+-- task 2.4
+(define (fun2-iv f)
+  (define counter 0)
+  (define (new-f x)
+    (cond
+      [(eq? x 'get-counter) counter]
+      [(eq? x 'zero-count) (set! counter 0)]
+      [else (begin
+              (set! counter (+ counter 1))
+              (f x))]))
+  new-f)
+
+
+-- task 2.5
+(define (fun2-v-cps tree cc)
+  (define (find-max-cps node cc)
+    (if (equal? node '#())
+        (cc -inf.0)
+        (let ((value (vector-ref node 0))
+              (left (vector-ref node 1))
+              (right (vector-ref node 2)))
+          (find-max-cps left
+                        (lambda (left-max)
+                          (find-max-cps right
+                                        (lambda (right-max)
+                                          (cc (max value left-max right-max)))))))))
+  (define (find-min-cps node cc)
+    (if (equal? node '#())
+        (cc +inf.0)
+        (let ((value (vector-ref node 0))
+              (left (vector-ref node 1))
+              (right (vector-ref node 2)))
+          (find-min-cps left
+                        (lambda (left-min)
+                          (find-min-cps right
+                                        (lambda (right-min)
+                                          (cc (min value left-min right-min)))))))))
+
+  (find-max-cps tree
+                (lambda (max-val)
+                  (find-min-cps tree
+                                (lambda (min-val)
+                                  (cc (abs (- max-val min-val))))))))
+                                  
+                                  
+-- task 2.6
+(λx. ((λz. (λy. (z x))) x ((λy. y y) (λx. x x)))) y z
+(λx. (λz. λy. z x) x ((λy. y y) (λx. x x))) y z
+(λz. λy1. z y) y ((λy1. y1 y1)(λx. x x)) z
+(λy1. y y)((λy1. y1 y1)(λx. x x)) z
+y y z
+

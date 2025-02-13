@@ -1,0 +1,51 @@
+#lang racket
+
+(define 2tree%
+  (interface ()
+    isEmpty
+    printTree))
+
+(define Empty2tree%
+  (class* object% (2tree%)
+    (super-new)
+
+    (define/public (isEmpty) #t)
+
+    (define/public (printTree)
+      (void))))
+
+(define Nonempty2tree%
+  (class* object% (2tree%)
+    (init-field tag data (left #f) (right #f))
+    (super-new)
+
+    (define/public (isEmpty) #f)
+
+    (define/public (printTree)
+      (begin
+        (displayln tag)
+        (when right
+          (send right printTree))
+        (when left
+          (send left printTree))))
+
+    (define/public (get-tag) tag)
+    (define/public (set-tag new-tag) (set! tag new-tag))
+
+    (define/public (get-data) data)
+    (define/public (set-data new-data) (set! data new-data))
+
+    (define/public (get-left) left)
+    (define/public (set-left new-left) (set! left new-left))
+
+    (define/public (get-right) right)
+    (define/public (set-right new-right) (set! right new-right))))
+
+(define tree
+  (new Nonempty2tree%
+       [tag "root"]
+       [data "data"]
+       [left (new Nonempty2tree% [tag "left"] [data "left-data"])]
+       [right (new Nonempty2tree% [tag "right"] [data "right-data"])]))
+
+(send tree printTree) ; Output: root -> right -> left
